@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rover Control</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .option-btn {
+            padding: 20px 30px;
+            font-size: 18px;
+            text-decoration: none;
+            color: white;
+            border-radius: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .option-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .wifi {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        .bluetooth {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 Rover Control</h1>
+        <p style="margin-bottom: 30px; color: #666;">Select connection mode:</p>
+        <div class="options">
+            <a href="wifi/" class="option-btn wifi">📶 WiFi Mode</a>
+            <a href="bluetooth/" class="option-btn bluetooth">🔵 Bluetooth Mode</a>
+        </div>
+    </div>
+</body>
+</html>

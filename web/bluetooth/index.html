@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BinGo - Bluetooth Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/bluetooth.css">
+</head>
+<body>
+    <div class="panel">
+        <div class="panel-header">
+            <a href="../" class="back-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Back
+            </a>
+            <span class="panel-title">
+                <svg viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg>
+                Bluetooth
+            </span>
+        </div>
+
+        <div class="status-bar" id="status-bar">
+            <div class="status-dot" id="status-dot"></div>
+            <span class="status-text" id="status-text">Disconnected</span>
+        </div>
+
+        <div class="panel-body">
+            <div class="connect-section">
+                <div class="section-label">Connection</div>
+                <button class="connect-btn" id="connect-btn" onclick="connectBluetooth()">
+                    <svg viewBox="0 0 24 24"><path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29z"/></svg>
+                    Connect to Rover
+                </button>
+            </div>
+
+            <div class="section-label">Navigate to checkpoint</div>
+            <div class="checkpoints">
+                <button class="checkpoint-btn checkpoint-1" onclick="sendCommand('1')" disabled>
+                    <div class="cp-number">CP — 01</div>
+                    <div class="cp-label">A</div>
+                    <div class="cp-status">OFFLINE</div>
+                </button>
+                <button class="checkpoint-btn checkpoint-2" onclick="sendCommand('2')" disabled>
+                    <div class="cp-number">CP — 02</div>
+                    <div class="cp-label">B</div>
+                    <div class="cp-status">OFFLINE</div>
+                </button>
+                <button class="checkpoint-btn checkpoint-3" onclick="sendCommand('3')" disabled>
+                    <div class="cp-number">CP — 03</div>
+                    <div class="cp-label">C</div>
+                    <div class="cp-status">OFFLINE</div>
+                </button>
+            </div>
+
+            <div class="section-label">Activity Log</div>
+            <div class="log-wrap">
+                <div class="log-toolbar">
+                    <span class="log-toolbar-label">Terminal</span>
+                    <button class="log-clear" onclick="clearLog()">CLEAR</button>
+                </div>
+                <div class="log" id="log">
+                    <div class="log-empty" id="log-empty">No activity.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <span style="font-size: 12px; color: var(--text-dim);">BinGo v1.0</span>
+            <div class="footer-signal">
+                <div class="signal-bar"></div>
+                <div class="signal-bar"></div>
+                <div class="signal-bar"></div>
+                <div class="signal-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/bluetooth.js"></script>
+</body>
+</html>

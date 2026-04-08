@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BinGo - WiFi Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/wifi.css">
+</head>
+<body>
+    <div class="panel">
+        <div class="panel-header">
+            <a href="../" class="back-btn">
+                <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+                Back
+            </a>
+            <span class="panel-title">
+                <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+                WiFi
+            </span>
+        </div>
+
+        <div class="status-bar" id="status">
+            <div class="status-dot"></div>
+            <span class="status-text" id="status-text">CONNECTED</span>
+            <span class="status-meta" id="status-meta">192.168.1.42</span>
+        </div>
+
+        <div class="panel-body">
+            <div class="section-label">Navigate to checkpoint</div>
+
+            <div class="checkpoints">
+                <button class="checkpoint-btn checkpoint-1" onclick="sendCommand('1')">
+                    <div class="cp-number">CP — 01</div>
+                    <div class="cp-label">A</div>
+                    <div class="cp-status">READY</div>
+                </button>
+                <button class="checkpoint-btn checkpoint-2" onclick="sendCommand('2')">
+                    <div class="cp-number">CP — 02</div>
+                    <div class="cp-label">B</div>
+                    <div class="cp-status">READY</div>
+                </button>
+                <button class="checkpoint-btn checkpoint-3" onclick="sendCommand('3')">
+                    <div class="cp-number">CP — 03</div>
+                    <div class="cp-label">C</div>
+                    <div class="cp-status">READY</div>
+                </button>
+            </div>
+
+            <div class="section-label">Activity Log</div>
+            <div class="log-wrap">
+                <div class="log-toolbar">
+                    <span class="log-toolbar-label">stdout</span>
+                    <button class="log-clear" onclick="clearLog()">CLEAR</button>
+                </div>
+                <div class="log" id="log">
+                    <div class="log-empty" id="log-empty">No commands sent.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-footer">
+            <span class="footer-time" id="footer-time">—</span>
+            <div class="footer-signal">
+                <div class="signal-bar active"></div>
+                <div class="signal-bar active"></div>
+                <div class="signal-bar active"></div>
+                <div class="signal-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/wifi.js"></script>
+</body>
+</html>

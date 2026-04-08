@@ -1,0 +1,11 @@
+{
+  "name": "rover-control-server",
+  "version": "1.0.0",
+  "description": "Simple HTTP server for rover control panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["rover", "control", "esp32", "arduino"],
+  "license": "MIT"
+}
