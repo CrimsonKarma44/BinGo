@@ -136,15 +136,9 @@ void loop() {
   // Process incoming WiFi commands
   processCommands(); // read from ESP32
 
-  // int cmd = readCommandFromESP();
-  
-  // if (cmd != -1) {
-  //   executeCommand(cmd);
-  // }
-
   // Debug Output
   Serial.println(isRunning ? "Running" : "Not Running");
-// Navigation Logic
+  // Navigation Logic
   if (isRunning) {
     navigateLine();
   }
@@ -225,6 +219,10 @@ void navigateLine() {
 
   if (isOnCheckpoint && !wasOnCheckpoint) {
     handleCheckpoint();
+  }
+  // Move forward to leave the checkpoint
+  else if (isOnCheckpoint && wasOnCheckpoint) {
+    moveForward();
   }
   // Centered on line: only center sees black
   else if (L == LOW && C == HIGH && R == LOW) {
@@ -389,8 +387,8 @@ void arriveAtCheckpoint() {
   delay(DWELL_TIME);
   Serial.println("Dwell finished. Exiting checkpoint...");
   // Move forward a bit to leave the black area
-  moveForward();
-  delay(EXIT_MOVE_MS);
-  stopMotors();
+  // moveForward();
+  // delay(EXIT_MOVE_MS);
+  // stopMotors();
   Serial.println("Done. Moving to the next checkpoint in the queue...");
 }
