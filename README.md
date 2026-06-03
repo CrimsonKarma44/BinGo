@@ -4,7 +4,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Arduino-Motor%20Controller-blue" alt="Arduino">
-  <img src="https://img.shields.io/badge/ESP32-WiFi%20Proxy-green" alt="ESP32">
+  <img src="https://img.shields.io/badge/ESP8266-WiFi%20Module-green" alt="ESP8266">
   <img src="https://img.shields.io/badge/Web-Control%20Interface-purple" alt="Web Interface">
 </p>
 
@@ -15,7 +15,7 @@ BinGo is a complete IoT rover system that combines embedded hardware control wit
 BinGo consists of three integrated components:
 
 - **Arduino Controller** — Main rover logic: motor control, line-following sensors, checkpoint navigation, and command queue management
-- **ESP32 Bridge** — WiFi connectivity layer that bridges web commands to the Arduino via serial communication
+- **ESP8266 WiFi Module** — WiFi connectivity layer that bridges web commands to the Arduino via UART serial communication (APT protocol)
 - **Web Interface** — Modern control dashboard supporting both local WiFi and mobile Bluetooth modes
 
 ## ✨ Features
@@ -36,13 +36,13 @@ BinGo/
 │   │   ├── Motor control (L/R PWM)
 │   │   ├── Line-following logic (3 IR sensors)
 │   │   ├── Checkpoint queue management
-│   │   ├── Command processing from ESP32
+│   │   ├── Command processing from ESP8266
 │   │   └── Station arrival detection
 │   │
-│   └── esp32_code.ino           # WiFi bridge to Arduino
+│   └── esp8266_code.ino         # WiFi module bridge to Arduino
 │       ├── WiFi connection & IP assignment
 │       ├── HTTP POST endpoint for commands
-│       ├── Serial forwarding to Arduino
+│       ├── UART/APT serial forwarding to Arduino
 │       └── Command parsing (JSON)
 │
 └── web/
@@ -67,23 +67,37 @@ BinGo/
 
 ### Required Components
 - **Arduino Uno/Mega** — Motor control and sensor processing
-- **ESP32 DevKit** — WiFi bridge and command handling
+- **ESP8266 WiFi Module** — WiFi connectivity bridge (e.g., NodeMCU, Wemos D1 Mini, or standalone ESP8266)
 - **2x DC Motors** — Rover propulsion (with encoders/PWM control)
 - **3x IR Line Sensors** — Left, center, right (digital or analog)
 - **Motor Driver** — L298N or similar (2-channel PWM)
 - **Ultrasonic Sensor** (optional) — Obstacle detection
-- **Power Supply** — Suitable for motors + microcontrollers
+- **Logic Level Shifter** (recommended) — Step down 3.3V ESP8266 TX to 5V-safe Arduino RX (to protect Arduino)
+- **Power Supply** — Suitable for motors + microcontrollers (separate supplies recommended)
 
-### Pin Configuration
+### Pin Configuration & Wiring
 
 **Arduino:**
 - Motor pins: `ENA`, `MLB`, `MLF`, `ENB`, `MRB`, `MRF` (configured in code)
 - Sensors: `LEFT_SENSOR`, `CENTER_SENSOR`, `RIGHT_SENSOR`
-- Serial: UART for ESP32 communication (9600 baud)
+- RX pin: Receives data from ESP8266 TX (via logic level shifter) — typically RX0 or RX1
+- TX pin: Sends data to ESP8266 RX — typically TX0 or TX1
 
-**ESP32:**
-- Serial1: GPIO 16 (RX), GPIO 17 (TX) → connects to Arduino
-- WiFi: Built-in, configured in code
+**ESP8266 WiFi Module:**
+- TX pin (GPIO1) → Arduino RX (via logic level shifter if needed)
+- RX pin (GPIO3) → Arduino TX (direct connection, ESP8266 RX is 5V tolerant)
+- Ground: Common ground with Arduino and power supply
+- 3.3V: From dedicated 3.3V supply (ESP8266 requires stable 3.3V with sufficient current)
+- Built-in WiFi for network connectivity
+
+**UART/APT Connection Details:**
+- **Baud Rate:** 9600 baud (standard for Arduino-to-WiFi module communication)
+- **Protocol:** UART serial communication using APT (Arduino Protocol for Transmission) handshake
+- **Data Format:** Single character commands (`'0'`, `'1'`, `'2'`, etc. for checkpoints)
+- **Handshake:** APT protocol ensures reliable delivery with acknowledgment frames
+
+### Why Logic Level Shifting?
+The ESP8266 operates at 3.3V logic levels while Arduino typically uses 5V. A logic level shifter protects the ESP8266's RX pin from 5V signals while allowing the lower-voltage ESP8266 TX (3.3V) to be safely read by Arduino (which tolerates 3.3V as logic high).
 
 ## 🚀 Quick Start
 
@@ -93,34 +107,42 @@ BinGo/
 ```bash
 1. Open arduino-esp_code/arduino_code.ino in Arduino IDE
 2. Configure your motor and sensor pins
-3. Upload to your Arduino board
+3. Select appropriate serial port (RX/TX pins for ESP8266 communication)
+4. Upload to your Arduino board
 ```
 
-**ESP32:**
+**ESP8266:**
 ```bash
-1. Open arduino-esp_code/esp32_code.ino in Arduino IDE (with ESP32 board support)
-2. Set WiFi credentials (ssid/password)
-3. Configure ARDUINO_RX and ARDUINO_TX pins if needed
-4. Upload to your ESP32
+1. Install ESP8266 board support in Arduino IDE (via Boards Manager)
+2. Open arduino-esp_code/esp8266_code.ino in Arduino IDE
+3. Select your ESP8266 board variant (NodeMCU 1.0, Wemos D1 Mini, etc.)
+4. Set WiFi SSID and password
+5. Configure UART pins for Arduino communication (GPIO1 TX, GPIO3 RX)
+6. Upload to your ESP8266 module
 ```
 
 ### 2. Connect Hardware
 
-- Wire Arduino to motors and sensors per your pin configuration
-- Connect ESP32 to Arduino via serial (UART1 with logic level shifter if needed)
-- Power both boards
+- **Power:** Connect separate 5V supply to Arduino and separate 3.3V supply to ESP8266
+- **Wiring:** Connect Arduino to motors and sensors per your pin configuration
+- **UART Connection:** Wire ESP8266 to Arduino via logic level shifter (TX→RX, RX→TX, GND→GND)
+- **Common Ground:** Ensure all grounds are connected for proper communication
 
-### 3. Set Up Web Interface (Option A: Local Server)
+### 3. Test Serial Communication
+
+Open Arduino Serial Monitor (9600 baud) and verify that both Arduino and ESP8266 are communicating via UART. You should see command acknowledgments and status messages.
+
+### 4. Set Up Web Interface (Option A: Local Server)
 
 ```bash
 cd web/server
 npm install
 ```
 
-Edit `server.js` with your ESP32's IP address:
+Edit `server.js` with your ESP8266's IP address:
 ```javascript
-const ESP32_HOST = 'YOUR_ESP32_IP';
-const ESP32_PORT = 80;
+const ESP8266_HOST = 'YOUR_ESP8266_IP';
+const ESP8266_PORT = 80;
 ```
 
 Start the proxy server:
@@ -129,14 +151,14 @@ npm start
 # Server runs on http://localhost:3000
 ```
 
-### 4. Set Up Web Interface (Option B: Direct Connection)
+### 5. Set Up Web Interface (Option B: Direct Connection)
 
-Skip the Node.js server and open `web/index.html` directly in a browser on the same network as your ESP32 (the ESP32 will need CORS headers configured).
+Skip the Node.js server and open `web/index.html` directly in a browser on the same network as your ESP8266 (the ESP8266 will need CORS headers configured).
 
-### 5. Control Your Rover
+### 6. Control Your Rover
 
 **WiFi Mode:**
-1. Open http://localhost:3000 (or http://YOUR_ESP32_IP)
+1. Open http://localhost:3000 (or http://YOUR_ESP8266_IP)
 2. Click "WiFi Mode"
 3. Select a checkpoint (A, B, C) to queue a navigation command
 4. The rover processes the queue and navigates autonomously
@@ -144,20 +166,26 @@ Skip the Node.js server and open `web/index.html` directly in a browser on the s
 **Bluetooth Mode:**
 1. Open http://localhost:3000
 2. Click "Bluetooth Mode"
-3. Click "Connect to Rover" and select your ESP32 from the pairing dialog
+3. Click "Connect to Rover" and select your device from the pairing dialog
 4. Send checkpoint commands via Bluetooth
 
 ## 📡 Communication Protocol
 
-### Arduino ↔ ESP32
-- **Protocol:** Serial UART (9600 baud)
-- **Format:** Single character commands (`'0'`, `'1'`, `'2'`, etc. for checkpoints)
-- **Direction:** ESP32 sends commands; Arduino responds with status
+### Arduino ↔ ESP8266 (UART/APT)
+- **Protocol:** UART serial with APT handshake (9600 baud)
+- **Format:** Single character commands (`'0'`, `'1'`, `'2'`, etc. for checkpoints) with ACK/NAK frames
+- **Direction:** ESP8266 sends commands; Arduino responds with status acknowledgments
+- **APT Details:**
+  - Commands wrapped in APT frames: `[START][CMD][CHECKSUM][END]`
+  - Arduino validates checksum and sends acknowledgment
+  - Automatic retry on failed transmission
+  - Bidirectional communication for status updates
 
-### Web Interface ↔ ESP32
-- **Protocol:** HTTP POST (WiFi) or Bluetooth GATT (mobile)
-- **Format:** JSON: `{"command": "0"}` (WiFi) or raw bytes (Bluetooth)
-- **Endpoint:** `POST http://ESP32_IP/command`
+### Web Interface ↔ ESP8266 (HTTP)
+- **Protocol:** HTTP POST (WiFi)
+- **Format:** JSON: `{"command": "0"}` (checkpoint identifier)
+- **Endpoint:** `POST http://ESP8266_IP/command`
+- **Response:** JSON status confirmation from rover
 
 ### Arduino Navigation Logic
 - **Line Following:** Reads 3 sensors, adjusts motor PWM in real-time
@@ -165,24 +193,26 @@ Skip the Node.js server and open `web/index.html` directly in a browser on the s
   - Left sensor: Correct right (soft right)
   - Right sensor: Correct left (soft left)
 - **Checkpoint Queue:** Processes navigation destinations in FIFO order
-- **Station Arrival:** Ultrasonic sensor detects checkpoints
+- **Station Arrival:** Ultrasonic sensor or timeout confirms checkpoint arrival
+- **APT Confirmation:** Arduino acknowledges each command processed in queue
 
 ## 🛠️ Technologies
 
 | Layer | Technology | Notes |
 |-------|-----------|-------|
 | **Rover Controller** | Arduino C++ | Motor control, sensors, navigation logic |
-| **WiFi Bridge** | ESP32 C++ | HTTP server, serial forwarding |
+| **WiFi Bridge** | ESP8266 C++ | HTTP server, UART/APT serial forwarding |
 | **Web Frontend** | HTML5, CSS3, Vanilla JS | No build step required |
 | **Proxy Server** | Node.js | Optional, for local testing |
-| **Communication** | HTTP, Serial UART, Web Bluetooth | Multiple connectivity options |
-| **Hardware** | Arduino, ESP32, DC Motors, IR Sensors | Fully open-source friendly |
+| **Communication** | HTTP, UART/APT, Web Bluetooth | Multiple connectivity options |
+| **Hardware** | Arduino, ESP8266, DC Motors, IR Sensors | Fully open-source friendly |
+| **Logic Conversion** | 3.3V-to-5V Logic Level Shifter | Protects ESP8266 from 5V signals |
 
 ## 🎮 Usage Examples
 
 ### Send a navigation command via WiFi
 ```bash
-curl -X POST http://ESP32_IP/command \
+curl -X POST http://ESP8266_IP/command \
   -H "Content-Type: application/json" \
   -d '{"command":"1"}'
 ```
@@ -198,30 +228,46 @@ curl -X POST http://ESP32_IP/command \
 - **Motor Speed:** Adjust `PWM_MAX` and `PWM_MIN` in arduino_code.ino
 - **Sensor Sensitivity:** Tune threshold values in line-following logic
 - **UI Theme:** Edit CSS files in `web/css/`
-- **WiFi SSID/Password:** Update credentials in esp32_code.ino
+- **WiFi SSID/Password:** Update credentials in esp8266_code.ino
+- **UART Baud Rate:** Change from 9600 to higher rate if needed (ensure both Arduino and ESP8266 match)
+- **APT Handshake Timeout:** Adjust retry settings in both firmware files
 - **Checkpoint Behavior:** Modify `arriveAtCheckpoint()` and `arriveAtStation()` in arduino_code.ino
 
 ## 📚 How It Works
 
-1. **Power On:** Arduino initializes motors and sensors; ESP32 connects to WiFi
-2. **User Sends Command:** Web interface sends checkpoint number to ESP32 via HTTP
-3. **Forwarding:** ESP32 receives command, parses JSON, sends character to Arduino via serial
-4. **Queue Management:** Arduino enqueues the checkpoint and sets `isRunning = true`
-5. **Navigation:** Arduino's main loop continuously reads sensors and adjusts motor PWM
-6. **Arrival Detection:** Ultrasonic sensor or timeout confirms checkpoint arrival
-7. **Dequeue & Repeat:** Arduino processes next checkpoint in queue
+1. **Power On:** Arduino initializes motors and sensors; ESP8266 connects to WiFi and establishes UART link with Arduino
+2. **User Sends Command:** Web interface sends checkpoint number to ESP8266 via HTTP POST
+3. **HTTP Processing:** ESP8266 receives command, parses JSON, wraps command in APT frame
+4. **UART Transmission:** ESP8266 sends APT-wrapped command to Arduino via UART (9600 baud)
+5. **Arduino Verification:** Arduino receives APT frame, validates checksum, sends acknowledgment back to ESP8266
+6. **Queue Management:** Arduino enqueues the checkpoint and sets `isRunning = true`
+7. **Navigation:** Arduino's main loop continuously reads sensors and adjusts motor PWM
+8. **Arrival Detection:** Ultrasonic sensor or timeout confirms checkpoint arrival
+9. **Dequeue & Repeat:** Arduino processes next checkpoint in queue; cycle repeats
 
 ## 🐛 Debugging
 
-**Arduino Serial Monitor:** Set to 9600 baud to see rover status and command logs
+**Arduino Serial Monitor:** 
+- Set to 9600 baud
+- Watch for rover status, command receipts, and APT acknowledgments
+- Check motor control output and sensor readings
 
-**ESP32 Serial Monitor:** Set to 115200 baud to see WiFi connection and HTTP requests
+**ESP8266 Serial Monitor:** 
+- Set to 115200 baud (standard ESP8266 debug baud rate)
+- Monitor WiFi connection status and RSSI signal strength
+- View HTTP requests and UART transmission logs
 
-**Browser Console:** Check JavaScript errors and network requests in the web interface
+**Browser Console:** 
+- Check JavaScript errors and network requests in the web interface
+- Verify JSON payload being sent to ESP8266
+
+**UART Communication:**
+- Use a logic analyzer or USB-to-UART adapter to monitor the serial bus between Arduino and ESP8266
+- Verify APT frames are being transmitted and acknowledged correctly
 
 ## 👥 Contributors
 
-- [@CrimsonKarma44](https://github.com/CrimsonKarma44) — Project lead, web interface & ESP32 firmware
+- [@CrimsonKarma44](https://github.com/CrimsonKarma44) — Project lead, web interface & ESP8266 firmware
 - [ahmad nakore](mailto:nakoresmacintel@122222222.local) — Arduino controller & navigation logic
 
 ## 📄 License
